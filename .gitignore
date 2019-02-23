@@ -1,0 +1,8 @@
+.ccls-cache/*
+
+Debug/*
+Testing/*
+
+compile_commands.json
+
+*.user
