@@ -5,7 +5,7 @@ TEST(test_parse_number, test_parser)
 {
     std::string input = "456";
     Parser parser(input);
-    auto expr = parser.parseOperand();
+    auto expr = parser.parse();
     auto number = dynamic_cast<Number*>(expr.get());
     ASSERT_NE(number, nullptr);
 }
@@ -14,7 +14,7 @@ TEST(test_parse_number_value, test_parser)
 {
     std::string input = "456";
     Parser parser(input);
-    auto expr = parser.parseOperand();
+    auto expr = parser.parse();
     auto number = dynamic_cast<Number*>(expr.get());
     ASSERT_EQ(number->value, 456);
 }
@@ -23,17 +23,9 @@ TEST(test_parse_variable, test_parser)
 {
     std::string input = "x";
     Parser parser(input);
-    auto expr = parser.parseOperand();
+    auto expr = parser.parse();
     auto var = dynamic_cast<Variable*>(expr.get());
     ASSERT_NE(var, nullptr);
-}
-
-TEST(test_parse_variable_name, test_parser)
-{
-    std::string input = "x";
-    Parser parser(input);
-    auto expr = parser.parseOperand();
-    auto var = dynamic_cast<Variable*>(expr.get());
     ASSERT_EQ(var->name, input);
 }
 

@@ -19,9 +19,13 @@ struct Lexer {
     std::string text;
     Token token;
 
-    Lexer(const std::string &str) noexcept;
+    explicit Lexer() noexcept;
+    explicit Lexer(const char *str) noexcept;
+    explicit Lexer(const std::string &str) noexcept;
 
     Token getNextToken();
+    void setInput(const char *str) noexcept;
+    void setInput(const std::string &str) noexcept;
 };
 
 struct Expression {
@@ -57,22 +61,26 @@ struct Variable: Expression {
 };
 
 struct Parser {
+    std::string input;
     Lexer lexer;
     std::map<int, int> priority;
 
-    Parser(const std::string &str)
-        : lexer(str)
-        , priority{{'+', 1},
-                   {'-', 2},
-                   {'*', 3},
-                   {'/', 4},
-                   {'=', 5}}
-        {}
+    Parser(const char *str);
+    Parser(const std::string &str);
 
     std::unique_ptr<Expression> parseOperand();
     std::unique_ptr<Expression> parseOperation(std::unique_ptr<Expression> lhs);
     std::unique_ptr<Expression> parseOperationTail(std::unique_ptr<Expression> lhs, int op);
     std::unique_ptr<Expression> parse();
+};
+
+struct Solver {
+    static bool hasVariable(const std::unique_ptr<Expression> &branch);
+    static bool simplify(std::unique_ptr<Expression> &ast);
+    static bool solve(std::unique_ptr<Expression> &ast, int &result);
+    static bool rebuild(std::unique_ptr<Expression> &lhs, std::unique_ptr<Expression> &rhs);
+
+    static bool is_variable(const std::unique_ptr<Expression> &expr);
 };
 
 #endif /* MAIN_H */
