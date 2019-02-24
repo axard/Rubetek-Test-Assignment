@@ -66,14 +66,38 @@ Lexer::Token Lexer::getNextToken()
     return token;
 }
 
+// Реализация Parser
+// -----------------------------------------------------------------------------
+
+std::unique_ptr<Expression> Parser::parseOperand()
+{
+    auto token = lexer.getNextToken();
+
+    switch (token) {
+    case Lexer::Number:
+        return std::make_unique<Number>(std::stoi(lexer.text));
+
+    case Lexer::Variable:
+        return std::make_unique<Variable>(lexer.text);
+
+    default:
+        return nullptr;
+    }
+}
+
+std::unique_ptr<Expression> Parser::parse()
+{
+    return std::make_unique<Expression>();
+}
+
 // Точка входа
 // =============================================================================
 
-#ifndef TEST
+#ifndef UNIT_TEST
 
 int main(int argc, char *argv[])
 {
     return 0;
 }
 
-#endif /* TEST */
+#endif /* UNIT_TEST */
