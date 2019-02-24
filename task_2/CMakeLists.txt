@@ -4,7 +4,11 @@ set(CMAKE_C_STANDARD_REQUIRED 99)
 
 include_directories(src)
 
-file(GLOB SOURCES src/*.c)
+file(GLOB TASK_2_SOURCES src/*.c)
 
-add_executable(${PROJECT_NAME} ${SOURCES})
-target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
+# Оформляем задание как библиотеку, которая будет линковаться статически
+# Dynamic Memory Manager
+add_library(dmm STATIC ${TASK_2_SOURCES})
+
+enable_testing()
+add_subdirectory(test)
