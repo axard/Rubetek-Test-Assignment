@@ -1,4 +1,5 @@
 #include "main.h"
+#include <iostream>
 
 // Типы
 // =============================================================================
@@ -85,9 +86,74 @@ std::unique_ptr<Expression> Parser::parseOperand()
     }
 }
 
+std::unique_ptr<Expression> Parser::parseOperation(std::unique_ptr<Expression> lhs)
+{
+    if (lhs == nullptr) {
+        lhs = parseOperand();
+        if (lhs == nullptr) {
+            std::cerr << "Ошибка разбора левой части'" << lexer.text << "'. Ожидалось число или переменная" << std::endl;
+            return nullptr;
+        }
+
+        // Определяем токен операции
+        lexer.getNextToken();
+        if (lexer.token == Lexer::No) {
+            return lhs;
+        }
+
+        if (lexer.token != Lexer::Operation) {
+            std::cerr << "Ошибка разбора '" << lexer.text << "'. Ожидалась операция" << std::endl;
+            return nullptr;
+        }
+    }
+
+    int op = lexer.text[0];
+    return parseOperationTail(std::move(lhs), op);
+}
+
+std::unique_ptr<Expression> Parser::parseOperationTail(std::unique_ptr<Expression> lhs, int op)
+{
+    // Определяем правый операнд
+    auto rhs = parseOperand();
+    if (rhs == nullptr) {
+        std::cerr << "Ошибка разбора правой части'" << lexer.text << "'. Ожидалось число или переменная" << std::endl;
+        return nullptr;
+    }
+
+    // Теперь надо проверить приоритет следующей операций, чтобы построить правильное дерево
+    // Определяем токен следующей операции
+    auto nextOpToken = lexer.getNextToken();
+
+    // Если лексер закончил, то создаём операцию и заканчиваем
+    if (nextOpToken == Lexer::No) {
+        return std::make_unique<Operation>(op, std::move(lhs), std::move(rhs));
+    }
+
+    // Если лексер вернул операцию, то сравниваем её приоритет с текущей операцией
+    if (nextOpToken == Lexer::Operation) {
+        int nextOp = lexer.text[0];
+        if (priority[op] < priority[nextOp]) {
+            rhs = parseOperationTail(std::move(rhs), nextOp);
+        }
+
+        if (rhs == nullptr) {
+            return nullptr;
+        }
+
+        return std::make_unique<Operation>(op, std::move(lhs), std::move(rhs));
+    }
+
+    std::cerr << "Ошибка разбора '" << lexer.text << "'. Ожидалась операция или конец строки" << std::endl;
+    return nullptr;
+}
+
 std::unique_ptr<Expression> Parser::parse()
 {
-    return std::make_unique<Expression>();
+    std::unique_ptr<Expression> lhs = nullptr;
+    do {
+        lhs = parseOperation((lhs) ? std::move(lhs) : nullptr);
+    } while ((lexer.token != Lexer::No) && (lhs != nullptr));
+    return lhs;
 }
 
 // Точка входа

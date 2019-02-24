@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <memory>
+#include <map>
 
 struct Lexer {
     enum Token {
@@ -57,12 +58,20 @@ struct Variable: Expression {
 
 struct Parser {
     Lexer lexer;
+    std::map<int, int> priority;
 
     Parser(const std::string &str)
         : lexer(str)
+        , priority{{'+', 1},
+                   {'-', 2},
+                   {'*', 3},
+                   {'/', 4},
+                   {'=', 5}}
         {}
 
     std::unique_ptr<Expression> parseOperand();
+    std::unique_ptr<Expression> parseOperation(std::unique_ptr<Expression> lhs);
+    std::unique_ptr<Expression> parseOperationTail(std::unique_ptr<Expression> lhs, int op);
     std::unique_ptr<Expression> parse();
 };
 
